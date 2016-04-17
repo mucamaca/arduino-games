@@ -18,10 +18,9 @@ struct snake_t{
   struct piece *arr;
 };
 
-long ranx = 120, rany = 43;
-struct snake_t *snake;
-char obstacle_len = 0;
-struct piece *obst;
+static char obstacle_len = 0;
+static struct snake_t *snake;
+static struct piece *obst;
 
 
 void update_snake(){
