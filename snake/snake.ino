@@ -1,14 +1,18 @@
+/*
+ * The only currently existing game.
+ */
+
 #include <Adafruit_ssd1306syp.h>
 #define SDA_PIN 13
 #define SCL_PIN 12
 Adafruit_ssd1306syp display(SDA_PIN, SCL_PIN);
 
-struct piece{
+static struct piece{
   char x;
   char y;
 };
 
-struct snake_t{
+static struct snake_t{
   char x;
   char y;
   signed char ldx;
@@ -63,14 +67,28 @@ void move(){
     snake->ldy = dy;
   }
   
-  //popravi tole, da se ne bo dalo ful ostro zavijat
+  //TODO popravi tole, da se ne bo dalo ful ostro zavijat
 }
 
 void collision(){};
+
+void generate_food(){
+  char i, t = 0;
+  food.x = random(0, 128);
+  food.y = random(0, 64);
+  for(i=0; i < snake->len; i++){
+    if(snake->arr[i].x == food.x && snake->arr[i].y == food.y)
+      t = 1;
+  }
+  if(t)
+    generate_food();
+}
+
 void eat(){
   if(snake->x == food.x && snake->y == food.y){
     snake->len++;
     score++;
+    generate_food();
   }
 }
 
