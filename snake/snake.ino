@@ -36,7 +36,7 @@ void update_snake(){
   
 
 void move(){
-  signed char dx = 0,dy = 0;
+  signed char dx = 0, dy = 0;
   if(analogRead(5) - 512 < -100){
     dx = -1;
   }
@@ -70,7 +70,13 @@ void move(){
   //TODO popravi tole, da se ne bo dalo ful ostro zavijat
 }
 
-void collision(){};
+void collision(){
+  if(m_pFramebuffer[snake->y / 8 * 128 + snake->x])
+    if(snake->x == food.x && snake->y == food.y)
+      eat();
+    else
+      end_game();
+}
 
 void generate_food(){
   char i, t = 0;
@@ -85,11 +91,9 @@ void generate_food(){
 }
 
 void eat(){
-  if(snake->x == food.x && snake->y == food.y){
-    snake->len++;
-    score++;
-    generate_food();
-  }
+  snake->len++;
+  score++;
+  generate_food();
 }
 
 void update(){
@@ -104,9 +108,11 @@ void draw_snake(){
   while(i++ < snake->len){
     if((i + 1) % snake->len != snake->index)
       display.drawLine(snake->arr[i % snake->len].x, snake->arr[i % snake->len].y, 
-          snake->arr[(i + 1) % snake->len].x, snake->arr[(i + 1) % snake->len].y, WHITE);
+           snake->arr[(i + 1) % snake->len].x, snake->arr[(i + 1) % snake->len].y, WHITE);
   }
 }
+
+void update_records(){};
 
 void end_game(){
   char i;
@@ -115,6 +121,7 @@ void end_game(){
     render();
     delay(100);
   }
+  update_records();
   free(snake);
   free(obst);
   exit(0);
