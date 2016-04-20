@@ -9,14 +9,15 @@
 #include <Adafruit_ssd1306syp.h>
 #define SDA_PIN 13
 #define SCL_PIN 12
+
 Adafruit_ssd1306syp display(SDA_PIN, SCL_PIN);
 
-static struct piece{
+struct piece{
   char x;
   char y;
 };
 
-static struct snake_t{
+struct snake_t{
   char x;
   char y;
   signed char ldx;
@@ -25,6 +26,7 @@ static struct snake_t{
   char len;
   struct piece *arr;
 };
+
 static char score;
 static char obstacle_len = 0;
 static struct snake_t *snake;
@@ -75,7 +77,7 @@ void move(){
 }
 
 bool collision_check(char x, char y){
-  if(m_pFramebuffer[y / 8 * 128 + x] & (y % 8) << 1)
+  if(display.m_pFramebuffer[y / 8 * 128 + x] & (y % 8) << 1)
     return 1;
   else
     return 0;
@@ -124,7 +126,18 @@ void draw_snake(){
 }
 
 void update_records(){
-  };
+  char i, val;
+  char shift=1;
+  for(i = EEPROM_START + 1; i < EEPROM_END; i++){
+    val = EEPROM[i];
+    if(shift){
+      val >>= 4;
+    }
+    if(score > val){
+      // push everything down cliff;
+    }
+  }
+}
 
 void end_game(){
   char i;
@@ -133,7 +146,7 @@ void end_game(){
     render();
     delay(100);
   }
-  update_records();
+  //update_records();
   free(snake);
   free(obst);
   exit(0);
@@ -173,7 +186,6 @@ void setup(){
   randomSeed(micros()+(int)analogRead(4));
   food.x=42;
   food.y=42;
-  //Serial.println("meow. im here");
   char i;
   for(i = 1; i < snake->len * 4; i += 4){
     display.drawLine(snake->x, snake->y + i, snake->x, snake->y + i + 4, WHITE);
