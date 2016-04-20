@@ -2,6 +2,10 @@
  * The only currently existing game.
  */
 
+#define EEPROM_START 0
+#define EEPROM_END 4
+#define EEPROM_UNIT_LENGTH 4
+
 #include <Adafruit_ssd1306syp.h>
 #define SDA_PIN 13
 #define SCL_PIN 12
@@ -21,7 +25,7 @@ static struct snake_t{
   char len;
   struct piece *arr;
 };
-
+static char score;
 static char obstacle_len = 0;
 static struct snake_t *snake;
 static struct piece *obst;
@@ -70,8 +74,15 @@ void move(){
   //TODO popravi tole, da se ne bo dalo ful ostro zavijat
 }
 
+bool collision_check(char x, char y){
+  if(m_pFramebuffer[y / 8 * 128 + x] & (y % 8) << 1)
+    return 1;
+  else
+    return 0;
+}
+
 void collision(){
-  if(m_pFramebuffer[snake->y / 8 * 128 + snake->x])
+  if(collision_check(snake->x, snake->y))
     if(snake->x == food.x && snake->y == food.y)
       eat();
     else
@@ -112,7 +123,8 @@ void draw_snake(){
   }
 }
 
-void update_records(){};
+void update_records(){
+  };
 
 void end_game(){
   char i;
