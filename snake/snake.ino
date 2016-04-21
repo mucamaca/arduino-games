@@ -1,4 +1,4 @@
-/*
+/**
  * The only currently existing game.
  */
 
@@ -7,6 +7,7 @@
 #define EEPROM_UNIT_LENGTH 4
 
 #include <Adafruit_ssd1306syp.h>
+#include <EEPROM.h>
 #define SDA_PIN 13
 #define SCL_PIN 12
 
@@ -18,16 +19,15 @@ struct piece{
 };
 
 struct snake_t{
+  struct piece *arr;
   char x;
   char y;
   signed char ldx;
   signed char ldy;
   char index;
   char len;
-  struct piece *arr;
 };
 
-static char score;
 static char obstacle_len = 0;
 static struct snake_t *snake;
 static struct piece *obst;
@@ -76,8 +76,22 @@ void move(){
   //TODO popravi tole, da se ne bo dalo ful ostro zavijat
 }
 
+void generate_food(){
+  char i;
+  for(i=0; i < snake->len; i++){
+    if(snake->arr[i].x == food.x && snake->arr[i].y == food.y)
+      food.x = random(0, 128);
+      food.y = random(0, 64);
+  }
+}
+
+void eat(){
+  snake->len++;
+  generate_food();
+}
+
 bool collision_check(char x, char y){
-  if(display.m_pFramebuffer[y / 8 * 128 + x] & (y % 8) << 1)
+  if(display.m_pFramebuffer[y / 8 * 128 + x] & 1 << (y % 8))
     return 1;
   else
     return 0;
@@ -85,34 +99,16 @@ bool collision_check(char x, char y){
 
 void collision(){
   if(collision_check(snake->x, snake->y))
-    if(snake->x == food.x && snake->y == food.y)
-      eat();
-    else
+    if(snake->x == food.x && snake->y == food.y){
+      //eat();
+      snake->len++;
+    }else
       end_game();
-}
-
-void generate_food(){
-  char i, t = 0;
-  food.x = random(0, 128);
-  food.y = random(0, 64);
-  for(i=0; i < snake->len; i++){
-    if(snake->arr[i].x == food.x && snake->arr[i].y == food.y)
-      t = 1;
-  }
-  if(t)
-    generate_food();
-}
-
-void eat(){
-  snake->len++;
-  score++;
-  generate_food();
 }
 
 void update(){
   move();
   collision();
-  eat();
   update_snake();
 }
 
@@ -133,7 +129,7 @@ void update_records(){
     if(shift){
       val >>= 4;
     }
-    if(score > val){
+    if(snake->len > val){
       // push everything down cliff;
     }
   }
@@ -142,14 +138,11 @@ void update_records(){
 void end_game(){
   char i;
   delay(200);
-  for(i = 0; i < 5; i++){
-    render();
-    delay(100);
-  }
+  Serial.println(snake->len);
   //update_records();
   free(snake);
   free(obst);
-  exit(0);
+  while(1);
 }
 
 void render(){
@@ -162,20 +155,19 @@ void render(){
 
 void snake_init(){
   snake->len = 5;
-  snake->arr = (struct piece *)malloc(sizeof(struct piece) * snake->len);
+  snake->arr = (struct piece *)malloc(sizeof(struct piece) * snake->len * 2);
   if(snake->arr == NULL)
     exit(1);
   snake->x = 50;
   snake->y = 50;
-  snake->ldx = 0;
   snake->ldy = -1;
-  snake->index = 0;
 }
 
 void setup(){
   delay(1000);
   Serial.begin(9600);
   display.initialize();
+  display.clear();
   snake=(struct snake_t *)malloc(sizeof(struct snake_t));
   if(snake == NULL ){
     Serial.println("you retard!");
