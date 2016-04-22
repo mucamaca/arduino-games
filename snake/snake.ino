@@ -121,19 +121,22 @@ void draw_snake(){
   }
 }
 
-void update_records(){
-  char i, val;
-  char shift=1;
-  for(i = EEPROM_START + 1; i < EEPROM_END; i++){
-    val = EEPROM[i];
-    if(shift){
-      val >>= 4;
-    }
+/*void update_records(){
+  char i, val, j;
+  for(i = EEPROM_START; i < EEPROM_END * 2; i++){
+    val = EEPROM[i / 2];
+    if(!i % 2)
+      val >>= 4; 
     if(snake->len > val){
-      // push everything down cliff;
+      for(j = i; j < EEPROM_END; j--){
+        s = EEPROM[j - 1];
+        EEPROM[j - 1] = EEPROM[j];
+      }
+      break;
+      
     }
   }
-}
+}*/
 
 void end_game(){
   char i;
